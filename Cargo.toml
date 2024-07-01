@@ -1,0 +1,11 @@
+[package]
+name = "tobi"
+version = "0.1.0"
+edition = "2021"
+authors = ["highhi <your.email@example.com>"]
+description = "A simple and intuitive CLI framework for Rust"
+license = "MIT"
+
+[dependencies]
+clap = { version = "4.4", features = ["derive"] }
+anyhow = "1.0"
