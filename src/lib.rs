@@ -22,6 +22,12 @@ impl ArgMatches {
     pub fn is_present(&self, name: &str) -> bool {
         self.values.contains_key(name)
     }
+
+    pub fn subcommand(&self) -> Option<(&str, &ArgMatches)> {
+        self.subcommand
+            .as_ref()
+            .map(|(name, matches)| (name.as_str(), matches.as_ref()))
+    }
 }
 
 pub struct Arg {
@@ -100,7 +106,15 @@ impl Command {
                     return Err(format!("Unknown option: {}", arg));
                 }
             } else {
-                return Err(format!("Unknown argument: {}", arg));
+                // Subcommand
+                if let Some(subcmd) = self.subcommands.iter().find(|cmd| cmd.name == *arg) {
+                    let sub_args = &args[i + 1..];
+                    let sub_matches = subcmd.parse_args(sub_args)?;
+                    matches.subcommand = Some((subcmd.name.clone(), Box::new(sub_matches)));
+                    break;
+                } else {
+                    return Err(format!("Unknown argument: {}", arg));
+                }
             }
             i += 1;
         }
