@@ -65,20 +65,22 @@ impl Command {
         }
     }
 
-    pub fn add_arg(&mut self, arg: Arg) {
+    pub fn arg(mut self, arg: Arg) -> Self {
         self.args.push(arg);
+        self
     }
 
-    pub fn add_subcommand(&mut self, subcommand: Command) {
+    pub fn subcommand(mut self, subcommand: Command) -> Self {
         self.subcommands.push(subcommand);
+        self
     }
 
-    pub fn parse(&self) -> Result<ArgMatches, String> {
+    pub fn parse(&self) -> Result<ArgMatches> {
         let args: Vec<String> = env::args().skip(1).collect();
         self.parse_args(&args)
     }
 
-    pub fn parse_args(&self, args: &[String]) -> Result<ArgMatches, String> {
+    pub fn parse_args(&self, args: &[String]) -> Result<ArgMatches> {
         let mut matches = ArgMatches::new();
 
         let mut i = 0;
@@ -97,13 +99,13 @@ impl Command {
                                 .values
                                 .insert(name.to_string(), Some(args[i].clone()));
                         } else {
-                            return Err(format!("Option --{} requires a value", name));
+                            return Err(anyhow::anyhow!("Option --{} requires a value", name));
                         }
                     } else {
                         matches.values.insert(name.to_string(), None);
                     }
                 } else {
-                    return Err(format!("Unknown option: {}", arg));
+                    return Err(anyhow::anyhow!("Unknown option: {}", arg));
                 }
             } else {
                 // Subcommand
@@ -113,7 +115,7 @@ impl Command {
                     matches.subcommand = Some((subcmd.name.clone(), Box::new(sub_matches)));
                     break;
                 } else {
-                    return Err(format!("Unknown argument: {}", arg));
+                    return Err(anyhow::anyhow!("Unknown argument: {}", arg));
                 }
             }
             i += 1;
@@ -122,7 +124,7 @@ impl Command {
     }
 
     pub fn generate_help(&self) -> String {
-        let mut help = format!("Usage: {} [OPTIONS]\n\n", self.name);
+        let mut help = format!("Usage: {} [OPTIONS] [SUBCOMMAND]\n\n", self.name);
         help.push_str(&format!("{}\n\n", self.description));
 
         if !self.args.is_empty() {
@@ -148,8 +150,4 @@ impl Command {
     pub fn print_help(&self) {
         println!("{}", self.generate_help());
     }
-}
-
-pub trait Runnable {
-    fn run(&self) -> Result<(), String>;
 }
