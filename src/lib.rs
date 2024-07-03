@@ -65,12 +65,12 @@ impl Command {
         }
     }
 
-    pub fn arg(mut self, arg: Arg) -> Self {
+    pub fn arg(&mut self, arg: Arg) -> &Self {
         self.args.push(arg);
         self
     }
 
-    pub fn subcommand(mut self, subcommand: Command) -> Self {
+    pub fn subcommand(&mut self, subcommand: Command) -> &Self {
         self.subcommands.push(subcommand);
         self
     }
