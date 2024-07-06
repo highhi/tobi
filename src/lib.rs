@@ -1,6 +1,6 @@
 pub use anyhow::Result;
 use std::collections::HashMap;
-use std::{env, string};
+use std::env;
 
 pub struct ArgMatches {
     values: HashMap<String, Option<String>>,
@@ -39,18 +39,28 @@ pub struct Arg {
 }
 
 impl Arg {
-    pub fn new(name: &str, description: &str, required: bool, takes_value: bool) -> Self {
+    pub fn new(name: &str, description: &str) -> Self {
         Arg {
             name: name.to_string(),
             description: description.to_string(),
-            required,
-            takes_value,
+            required: false,
+            takes_value: false,
             short: None,
         }
     }
 
     pub fn short(mut self, short: char) -> Self {
         self.short = Some(short);
+        self
+    }
+
+    pub fn required(mut self, required: bool) -> Self {
+        self.required = required;
+        self
+    }
+
+    pub fn takes_value(mut self, takes_value: bool) -> Self {
+        self.takes_value = takes_value;
         self
     }
 }
@@ -217,5 +227,80 @@ impl Command {
 
     pub fn print_help(&self) {
         println!("{}", self.generate_help());
+    }
+}
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+
+    #[test]
+    fn test_command_creation() {
+        let cmd = Command::new("test")
+            .description("A test command")
+            .version("1.0");
+
+        assert_eq!(cmd.name, "test");
+        assert_eq!(cmd.description, "A test command");
+        assert_eq!(cmd.version, Some("1.0".to_string()));
+    }
+
+    #[test]
+    fn test_arg_creation() {
+        let arg = Arg::new("name", "Name of the person")
+            .short('n')
+            .required(true)
+            .takes_value(true);
+
+        assert_eq!(arg.name, "name");
+        assert_eq!(arg.description, "Name of the person");
+        assert_eq!(arg.required, true);
+        assert_eq!(arg.takes_value, true);
+        assert_eq!(arg.short, Some('n'));
+    }
+
+    #[test]
+    fn test_parse_long_option() {
+        let cmd = Command::new("test").arg(Arg::new("option", "A test option").takes_value(true));
+
+        let args = vec!["--option".to_string(), "value".to_string()];
+        let matches = cmd.parse_args(&args).unwrap();
+        assert_eq!(matches.value_of("option"), Some("value"))
+    }
+
+    #[test]
+    fn test_parse_short_option() {
+        let cmd = Command::new("test").arg(
+            Arg::new("option", "A test option")
+                .short('o')
+                .takes_value(true),
+        );
+
+        let args = vec!["-o".to_string(), "value".to_string()];
+        let matches = cmd.parse_args(&args).unwrap();
+
+        assert_eq!(matches.value_of("option"), Some("value"));
+    }
+
+    #[test]
+    fn test_subcommand() {
+        let cmd = Command::new("test").subcommand(
+            Command::new("sub").arg(Arg::new("suboption", "A sub option").takes_value(true)),
+        );
+
+        let args = vec![
+            "sub".to_string(),
+            "--suboption".to_string(),
+            "value".to_string(),
+        ];
+        let matches = cmd.parse_args(&args).unwrap();
+
+        assert!(matches.subcommand().is_some());
+        if let Some((subcmd, submatches)) = matches.subcommand() {
+            assert_eq!(subcmd, "sub");
+            assert_eq!(submatches.value_of("suboption"), Some("value"));
+        } else {
+            panic!("Subcommand was not parsed correctly");
+        }
     }
 }
