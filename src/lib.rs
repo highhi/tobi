@@ -56,21 +56,26 @@ pub struct Command {
 }
 
 impl Command {
-    pub fn new(name: &str, description: &str) -> Self {
+    pub fn new(name: &str) -> Self {
         Command {
             name: name.to_string(),
-            description: description.to_string(),
+            description: String::new(),
             args: vec![],
             subcommands: vec![],
         }
     }
 
-    pub fn arg(&mut self, arg: Arg) -> &Self {
+    pub fn description(mut self, desc: &str) -> Self {
+        self.description = desc.to_string();
+        self
+    }
+
+    pub fn arg(mut self, arg: Arg) -> Self {
         self.args.push(arg);
         self
     }
 
-    pub fn subcommand(&mut self, subcommand: Command) -> &Self {
+    pub fn subcommand(mut self, subcommand: Command) -> Self {
         self.subcommands.push(subcommand);
         self
     }
