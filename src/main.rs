@@ -2,18 +2,21 @@ use tobi::{Arg, Command, Result};
 
 fn main() -> Result<()> {
     let app = Command::new("greeter")
+        .version("1.0")
         .description("A simple greeting CLI application")
         .arg(Arg {
             name: "name".to_string(),
             description: "Name of the person to greet".to_string(),
             required: false,
             takes_value: true,
+            short: Some('n'),
         })
         .arg(Arg {
             name: "enthusiastic".to_string(),
             description: "Add excitement to the greeting".to_string(),
             required: false,
             takes_value: false,
+            short: Some('e'),
         })
         .subcommand(
             Command::new("farewell")
@@ -23,6 +26,7 @@ fn main() -> Result<()> {
                     description: "Name of the person to bid farewell".to_string(),
                     required: false,
                     takes_value: true,
+                    short: Some('n'),
                 }),
         );
 
