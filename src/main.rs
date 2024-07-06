@@ -1,4 +1,4 @@
-use tobi::{Arg, Command, Result};
+use tonbi::{Arg, Command, Result};
 
 fn main() -> Result<()> {
     let app = Command::new("greeter")

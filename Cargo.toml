@@ -1,8 +1,8 @@
 [package]
-name = "tobi"
+name = "tonbi"
 version = "0.1.0"
 edition = "2021"
-authors = ["highhi <your.email@example.com>"]
+authors = ["highhi <kazu8160@gmail.com>"]
 description = "A simple and intuitive CLI framework for Rust"
 license = "MIT"
 
