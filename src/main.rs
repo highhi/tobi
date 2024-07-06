@@ -10,6 +10,7 @@ fn main() -> Result<()> {
             required: false,
             takes_value: true,
             short: Some('n'),
+            is_value: false,
         })
         .arg(Arg {
             name: "enthusiastic".to_string(),
@@ -17,6 +18,7 @@ fn main() -> Result<()> {
             required: false,
             takes_value: false,
             short: Some('e'),
+            is_value: false,
         })
         .subcommand(
             Command::new("farewell")
@@ -27,6 +29,7 @@ fn main() -> Result<()> {
                     required: false,
                     takes_value: true,
                     short: Some('n'),
+                    is_value: false,
                 }),
         );
 

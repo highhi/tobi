@@ -36,6 +36,7 @@ pub struct Arg {
     pub required: bool,
     pub takes_value: bool,
     pub short: Option<char>,
+    pub is_value: bool,
 }
 
 impl Arg {
@@ -46,6 +47,7 @@ impl Arg {
             required: false,
             takes_value: false,
             short: None,
+            is_value: false,
         }
     }
 
@@ -59,8 +61,13 @@ impl Arg {
         self
     }
 
-    pub fn takes_value(mut self, takes_value: bool) -> Self {
-        self.takes_value = takes_value;
+    pub fn takes_value(mut self) -> Self {
+        self.takes_value = true;
+        self
+    }
+
+    pub fn is_value(mut self) -> Self {
+        self.is_value = true;
         self
     }
 }
@@ -125,24 +132,29 @@ impl Command {
                     std::process::exit(0);
                 }
                 std::process::exit(0);
+            // When long option
             } else if arg.starts_with("--") {
                 let name = arg.trim_start_matches("--");
                 self.process_long_option(&mut matches, name, args, &mut arg_index)?;
+            // When short option
             } else if arg.starts_with('-') {
                 let shorts = arg.trim_start_matches('-').chars();
                 for short in shorts {
                     self.process_short_option(&mut matches, short, args, &mut arg_index)?;
                 }
+            // When subcommand
+            } else if let Some(subcmd) = self.subcommands.iter().find(|cmd| cmd.name == *arg) {
+                let sub_args = &args[arg_index + 1..];
+                let sub_matches = subcmd.parse_args(sub_args)?;
+                matches.subcommand = Some((subcmd.name.clone(), Box::new(sub_matches)));
+                break;
+            // When value
+            } else if self.args[arg_index].is_value {
+                matches
+                    .values
+                    .insert(self.args[arg_index].name.clone(), Some(arg.clone()));
             } else {
-                // Subcommand
-                if let Some(subcmd) = self.subcommands.iter().find(|cmd| cmd.name == *arg) {
-                    let sub_args = &args[arg_index + 1..];
-                    let sub_matches = subcmd.parse_args(sub_args)?;
-                    matches.subcommand = Some((subcmd.name.clone(), Box::new(sub_matches)));
-                    break;
-                } else {
-                    return Err(anyhow::anyhow!("Unknown argument: {}", arg));
-                }
+                return Err(anyhow::anyhow!("Unknown argument: {}", arg));
             }
             arg_index += 1;
         }
@@ -250,7 +262,7 @@ mod tests {
         let arg = Arg::new("name", "Name of the person")
             .short('n')
             .required(true)
-            .takes_value(true);
+            .takes_value();
 
         assert_eq!(arg.name, "name");
         assert_eq!(arg.description, "Name of the person");
@@ -261,7 +273,7 @@ mod tests {
 
     #[test]
     fn test_parse_long_option() {
-        let cmd = Command::new("test").arg(Arg::new("option", "A test option").takes_value(true));
+        let cmd = Command::new("test").arg(Arg::new("option", "A test option").takes_value());
 
         let args = vec!["--option".to_string(), "value".to_string()];
         let matches = cmd.parse_args(&args).unwrap();
@@ -270,11 +282,8 @@ mod tests {
 
     #[test]
     fn test_parse_short_option() {
-        let cmd = Command::new("test").arg(
-            Arg::new("option", "A test option")
-                .short('o')
-                .takes_value(true),
-        );
+        let cmd =
+            Command::new("test").arg(Arg::new("option", "A test option").short('o').takes_value());
 
         let args = vec!["-o".to_string(), "value".to_string()];
         let matches = cmd.parse_args(&args).unwrap();
@@ -285,7 +294,7 @@ mod tests {
     #[test]
     fn test_subcommand() {
         let cmd = Command::new("test").subcommand(
-            Command::new("sub").arg(Arg::new("suboption", "A sub option").takes_value(true)),
+            Command::new("sub").arg(Arg::new("suboption", "A sub option").takes_value()),
         );
 
         let args = vec![
