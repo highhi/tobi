@@ -19,11 +19,11 @@ fn main() {
         .subcommand(
             Command::new("copy")
                 .description("Copy a file")
-                .arg(Arg::new("source", "Source file").required().is_value())
+                .arg(Arg::new("source", "Source file").required().as_value())
                 .arg(
                     Arg::new("destination", "Destination file")
                         .required()
-                        .is_value(),
+                        .as_value(),
                 ),
         )
         .subcommand(

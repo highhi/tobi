@@ -66,7 +66,7 @@ impl Arg {
         self
     }
 
-    pub fn is_value(mut self) -> Self {
+    pub fn as_value(mut self) -> Self {
         self.is_value = true;
         self
     }
