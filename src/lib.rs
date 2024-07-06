@@ -56,8 +56,8 @@ impl Arg {
         self
     }
 
-    pub fn required(mut self, required: bool) -> Self {
-        self.required = required;
+    pub fn required(mut self) -> Self {
+        self.required = true;
         self
     }
 
@@ -261,7 +261,7 @@ mod tests {
     fn test_arg_creation() {
         let arg = Arg::new("name", "Name of the person")
             .short('n')
-            .required(true)
+            .required()
             .takes_value();
 
         assert_eq!(arg.name, "name");

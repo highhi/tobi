@@ -11,7 +11,7 @@ fn main() {
                 .description("Display file contents")
                 .arg(
                     Arg::new("file", "File to display")
-                        .required(true)
+                        .required()
                         .short('f')
                         .takes_value(),
                 ),
@@ -19,18 +19,18 @@ fn main() {
         .subcommand(
             Command::new("copy")
                 .description("Copy a file")
-                .arg(Arg::new("source", "Source file").required(true).is_value())
+                .arg(Arg::new("source", "Source file").required().is_value())
                 .arg(
                     Arg::new("destination", "Destination file")
-                        .required(true)
+                        .required()
                         .is_value(),
                 ),
         )
         .subcommand(
             Command::new("rename")
                 .description("Rename a file")
-                .arg(Arg::new("old", "Old file name").required(true))
-                .arg(Arg::new("new", "New file name").required(true)),
+                .arg(Arg::new("old", "Old file name").required())
+                .arg(Arg::new("new", "New file name").required()),
         );
 
     let matches = app.parse().unwrap_or_else(|e| {
